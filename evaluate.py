@@ -76,9 +76,9 @@ def make_coco_detection(predictions, dataset):
         pred = pred.resize((width, height))
         pred = pred.convert('xywh')
 
-        boxes = pred.box.tolist()
-        scores = pred.fields['scores'].tolist()
-        labels = pred.fields['labels'].tolist()
+        boxes = pred.bbox.tolist()
+        scores = pred.get_field('scores').tolist()
+        labels = pred.get_field('labels').tolist()
 
         labels = [dataset.id2category[i] for i in labels]
 

@@ -6,9 +6,9 @@ from torch.utils.data import DataLoader, sampler
 from tqdm import tqdm
 
 from argument import get_args
-from backbone import vovnet39, resnet18
+from backbone import vovnet39, resnet18, resnet50
 from dataset import COCODataset, collate_fn
-from model import FCOS
+from model import ATSS
 from transform import preset_transform
 from evaluate import evaluate
 from distributed import (
@@ -42,9 +42,9 @@ def save_predictions_to_images(dataset, predictions):
         height = img_meta['height']
         pred = pred.resize((width, height))
         
-        boxes = pred.box.tolist()
-        scores = pred.fields['scores'].tolist()
-        ids = pred.fields['labels'].tolist()
+        boxes = pred.bbox.tolist()
+        scores = pred.get_field('scores').tolist()
+        ids = pred.get_field('labels').tolist()
 
         img_name = img_meta['file_name']
         img_baseName = os.path.splitext(img_name)[0]
@@ -64,7 +64,6 @@ if __name__ == '__main__':
     # os.environ['CUDA_VISIBLE_DEVICES'] = '1,2'
 
     args = get_args()
-    args.threshold = 0.2
 
     n_gpu = int(os.environ['WORLD_SIZE']) if 'WORLD_SIZE' in os.environ else 1
     args.distributed = n_gpu > 1
@@ -79,11 +78,12 @@ if __name__ == '__main__':
     valid_set = COCODataset("/data/COCO_17/", 'val', preset_transform(args, train=False))
 
     # backbone = vovnet39(pretrained=False)
-    backbone = resnet18(pretrained=False)
-    model = FCOS(args, backbone)
+    # backbone = resnet18(pretrained=False)
+    backbone = resnet50(pretrained=False)
+    model = ATSS(args, backbone)
 
     # load weight
-    model_file = "./training_dir/epoch-1.pt"
+    model_file = "./training_dir/epoch-12.pt"
     chkpt = torch.load(model_file, map_location='cpu')  # load checkpoint
     model.load_state_dict(chkpt['model'])
     print('load weights from ' + model_file)
@@ -102,7 +102,7 @@ if __name__ == '__main__':
         valid_set,
         batch_size=args.batch,
         sampler=data_sampler(valid_set, shuffle=False, distributed=args.distributed),
-        num_workers=4,
+        num_workers=args.num_workers,
         collate_fn=collate_fn(args),
     )
 

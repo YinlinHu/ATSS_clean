@@ -5,7 +5,7 @@ def get_argparser():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--local_rank', type=int, default=0)
-    parser.add_argument('--lr', type=float, default=0.0025)
+    parser.add_argument('--lr', type=float, default=0.005)
     parser.add_argument('--batch', type=int, default=2)
     parser.add_argument('--epoch', type=int, default=12)
     parser.add_argument('--num_workers', type=int, default=0)

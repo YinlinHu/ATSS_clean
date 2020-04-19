@@ -133,7 +133,7 @@ def train(args, epoch, loader, model, optimizer, device, logger=None):
                 logger.add_scalar('training/loss_cls', loss_cls, totalStep)
                 logger.add_scalar('training/loss_box', loss_box, totalStep)
                 logger.add_scalar('training/loss_center', loss_center, totalStep)
-                logger.add_scalar('training/loss_all', loss, totalStep)
+                logger.add_scalar('training/loss_all', (loss_cls + loss_box + loss_center), totalStep)
 
 
 def data_sampler(dataset, shuffle, distributed):

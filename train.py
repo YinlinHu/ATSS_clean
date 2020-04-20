@@ -4,6 +4,7 @@ import torch
 from torch import nn, optim
 from torch.utils.data import DataLoader, sampler
 from tqdm import tqdm
+from prefetch_generator import BackgroundGenerator
 
 from argument import get_args
 from backbone import vovnet39, vovnet57, resnet18, resnet50, resnet101
@@ -52,9 +53,9 @@ def valid(args, epoch, loader, dataset, model, device, logger=None):
     model.eval()
 
     if get_rank() == 0:
-        pbar = tqdm(enumerate(loader), total=len(loader), dynamic_ncols=True)
+        pbar = tqdm(enumerate(BackgroundGenerator(loader)), total=len(loader), dynamic_ncols=True)
     else:
-        pbar = enumerate(loader)
+        pbar = enumerate(BackgroundGenerator(loader))
 
     preds = {}
 
@@ -94,9 +95,9 @@ def train(args, epoch, loader, model, optimizer, device, logger=None):
     model.train()
 
     if get_rank() == 0:
-        pbar = tqdm(enumerate(loader), total=len(loader), dynamic_ncols=True)
+        pbar = tqdm(enumerate(BackgroundGenerator(loader)), total=len(loader), dynamic_ncols=True)
     else:
-        pbar = enumerate(loader)
+        pbar = enumerate(BackgroundGenerator(loader))
 
     for idx, (images, targets, _) in pbar:
         model.zero_grad()

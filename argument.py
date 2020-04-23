@@ -42,6 +42,7 @@ def get_args():
     # 
     # how to select positves: ATSS , SSC (FCOS), IoU (RetinaNet), TOPK
     args.positive_type = "ATSS"
+    # args.positive_type = "SSC"
     # regressing from a box ('BOX') or a point ('POINT')
     args.regression_type = "BOX"
     args.anchor_sizes = [64, 128, 256, 512, 1024]

@@ -1,7 +1,9 @@
 import random
 
+import numpy as np
+from PIL import Image
 import torch
-import torchvision
+from torch.nn.functional import pad
 from torchvision.transforms import functional as F
 
 
@@ -63,6 +65,44 @@ class Resize:
         img = F.resize(img, size)
         target = target.resize(img.size)
 
+        return img, target  
+
+class RandomResize:
+    def __init__(self, min_size_range, max_size):
+        self.min_size_range = min_size_range
+        self.max_size = max_size
+
+    def __call__(self, img, target):
+        assert(len(self.min_size_range) == 2)
+        min_size = random.randint(self.min_size_range[0], self.min_size_range[1])
+        return Resize(min_size, self.max_size)(img, target)
+
+class RandomScale:
+    def __init__(self, min_scale, max_scale):
+        self.min_scale = min_scale
+        self.max_scale = max_scale
+
+    def __call__(self, img, target):
+        w, h = img.size
+        scale = random.uniform(self.min_scale, self.max_scale)
+        h *= scale
+        w *= scale
+        size = (round(h), round(w))
+
+        img = F.resize(img, size)
+        target = target.resize(img.size)
+
+        return img, target
+
+
+class RandomBrightness:
+    def __init__(self, factor):
+        self.factor = factor
+
+    def __call__(self, img, target):
+        factor = random.uniform(-self.factor, self.factor)
+        img = F.adjust_brightness(img, 1 + factor)
+
         return img, target
 
 
@@ -77,12 +117,10 @@ class RandomHorizontalFlip:
 
         return img, target
 
-
 class ToTensor:
     def __call__(self, img, target):
         return F.to_tensor(img), target
-
-
+    
 class Normalize:
     def __init__(self, mean, std):
         self.mean = mean
@@ -92,32 +130,3 @@ class Normalize:
         img = F.normalize(img, mean=self.mean, std=self.std)
 
         return img, target
-
-
-def preset_transform(config, train=True):
-    if train:
-        if config.train_min_size_range[0] == -1:
-            min_size = config.train_min_size
-
-        else:
-            min_size = list(
-                range(
-                    config.train_min_size_range[0], config.train_min_size_range[1] + 1
-                )
-            )
-
-        max_size = config.train_max_size
-        flip = 0.5
-
-    else:
-        min_size = config.test_min_size
-        max_size = config.test_max_size
-        flip = 0
-
-    normalize = Normalize(mean=config.pixel_mean, std=config.pixel_std)
-
-    transform = Compose(
-        [Resize(min_size, max_size), RandomHorizontalFlip(flip), ToTensor(), normalize]
-    )
-
-    return transform

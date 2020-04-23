@@ -9,7 +9,7 @@ from argument import get_args
 from backbone import vovnet39, vovnet57, resnet18, resnet50, resnet101
 from dataset import COCODataset, collate_fn
 from model import ATSS
-from transform import preset_transform
+import transform
 from evaluate import evaluate
 from distributed import (
     get_rank,
@@ -167,8 +167,25 @@ if __name__ == '__main__':
 
     device = 'cuda'
 
-    train_set = COCODataset(args.path, 'train', preset_transform(args, train=True))
-    valid_set = COCODataset(args.path, 'val', preset_transform(args, train=False))
+    train_trans = transform.Compose(
+        [
+            transform.RandomResize(args.train_min_size_range, args.train_max_size),
+            transform.RandomHorizontalFlip(0.5),
+            transform.ToTensor(),
+            transform.Normalize(args.pixel_mean, args.pixel_std)
+        ]
+    )
+
+    valid_trans = transform.Compose(
+        [
+            transform.Resize(args.test_min_size, args.test_max_size),
+            transform.ToTensor(), 
+            transform.Normalize(args.pixel_mean, args.pixel_std)
+        ]
+    )
+
+    train_set = COCODataset(args.path, 'train', train_trans)
+    valid_set = COCODataset(args.path, 'val', valid_trans)
 
     # backbone = vovnet39(pretrained=True)
     # backbone = vovnet57(pretrained=True)

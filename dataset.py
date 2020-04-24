@@ -93,8 +93,10 @@ def image_list(tensors, size_divisible=0):
     if size_divisible > 0:
         stride = size_divisible
         max_size = list(max_size)
-        max_size[1] = (max_size[1] | (stride - 1)) + 1
-        max_size[2] = (max_size[2] | (stride - 1)) + 1
+        if max_size[1] % stride != 0:
+            max_size[1] = (max_size[1] | (stride - 1)) + 1
+        if max_size[2] % stride != 0:
+            max_size[2] = (max_size[2] | (stride - 1)) + 1
         max_size = tuple(max_size)
 
     shape = (len(tensors),) + max_size

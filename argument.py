@@ -60,8 +60,8 @@ def get_args():
     args.train_max_size = 1333
     args.test_min_size = 800
     args.test_max_size = 1333
-    args.pixel_mean = [0.40789654, 0.44719302, 0.47026115]
-    args.pixel_std = [0.28863828, 0.27408164, 0.27809835]
+    args.pixel_mean = [0.485, 0.456, 0.406]
+    args.pixel_std = [0.229, 0.224, 0.225]
     args.size_divisible = 32
 
     return args
